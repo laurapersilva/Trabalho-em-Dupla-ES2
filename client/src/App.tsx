@@ -1,0 +1,79 @@
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import NotFound from "@/pages/NotFound";
+import { Route, Switch } from "wouter";
+import ErrorBoundary from "./components/ErrorBoundary";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import Home from "./pages/Home";
+import Dashboard from "./pages/Dashboard";
+import ProfessionalsPage from "./pages/ProfessionalsPage";
+import PatientsPage from "./pages/PatientsPage";
+import AppointmentsPage from "./pages/AppointmentsPage";
+import PrescriptionsPage from "./pages/PrescriptionsPage";
+import ExamsPage from "./pages/ExamsPage";
+import DashboardLayout from "./components/DashboardLayout";
+import { useAuth } from "./_core/hooks/useAuth";
+import { Loader2 } from "lucide-react";
+
+function ProtectedRoute({ component: Component }: { component: React.ComponentType<any> }) {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <NotFound />;
+  }
+
+  return <Component />;
+}
+
+function Router() {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <Switch>
+      <Route path={"/"} component={Home} />
+      {isAuthenticated && (
+        <>
+          <Route path={"/dashboard"} component={Dashboard} />
+          <Route path={"/professionals"} component={ProfessionalsPage} />
+          <Route path={"/patients"} component={PatientsPage} />
+          <Route path={"/appointments"} component={AppointmentsPage} />
+          <Route path={"/prescriptions"} component={PrescriptionsPage} />
+          <Route path={"/exams"} component={ExamsPage} />
+        </>
+      )}
+      <Route path={"/404"} component={NotFound} />
+      <Route component={NotFound} />
+    </Switch>
+  );
+}
+
+function App() {
+  return (
+    <ErrorBoundary>
+      <ThemeProvider defaultTheme="light">
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
+  );
+}
+
+export default App;
